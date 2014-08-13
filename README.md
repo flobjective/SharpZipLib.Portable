@@ -1,7 +1,8 @@
-SharpZipLib
-===========
+SharpZipLib.Portable
+====================
 
-\#ziplib is a Zip, GZip, Tar and BZip2 library written entirely in C# for the .NET platform.
+SharpZipLib.Portable is a Zip, GZip, Tar and BZip2 library written entirely in C# for the .NET Portable Class Library.
 
-Please see the [\#ziplib homepage](http://icsharpcode.github.io/SharpZipLib/) for precompiled downloads, 
-license information, link to the forum (support), release history, samples and more.
+This library is based on the [\#ziplib](https://github.com/icsharpcode/SharpZipLib) a Zip, GZip, Tar and BZip2 library written entirely in C# for the .NET platform.
+
+As PCL don't suppport cryptography nor System.IO, this library can't crypt/decrypt an archive, and all access to the file system are removed.
