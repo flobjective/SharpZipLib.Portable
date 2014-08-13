@@ -15,6 +15,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Github", "Github", "{2F09DD
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nuget", "Nuget", "{C772A6C0-E81D-4B61-99AE-403F219E2476}"
+	ProjectSection(SolutionItems) = preProject
+		SharpZipLib.Portable.nuspec = SharpZipLib.Portable.nuspec
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

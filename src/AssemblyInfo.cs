@@ -60,14 +60,20 @@ using System.Runtime.InteropServices;
 #elif (MONO_2_0)
 [assembly: AssemblyTitle("SharpZipLib for Mono 2.0")]
 #elif (PCL)
-[assembly: AssemblyTitle("SharpZipLib for Portable Class Library (.Net 4.0, WP 8.0, WP 8.1, WinStore 8.1, MonoTouch, MonoDroid)")]
+[assembly: AssemblyTitle("SharpZipLib for Portable Class Library (.Net 4.5, WP 8.0, WP 8.1, WinStore 8.1, MonoTouch, MonoDroid)")]
 #else
 [assembly: AssemblyTitle("SharpZipLibrary unlabelled version")]
 #endif
 
+#if !PCL
 [assembly: AssemblyDescription("A free C# compression library")]
 [assembly: AssemblyProduct("#ZipLibrary")]
 [assembly: AssemblyDefaultAlias("SharpZipLib")]
+#else
+[assembly: AssemblyDescription("A free C# compression library for PCL")]
+[assembly: AssemblyProduct("#ZipLibrary.Portable")]
+[assembly: AssemblyDefaultAlias("SharpZipLib.Portable")]
+#endif
 [assembly: AssemblyCulture("")]
 
 #if DEBUG
