@@ -1,3 +1,4 @@
+#if !PCL
 // PathFilter.cs
 //
 // Copyright 2005 John Reilly
@@ -332,3 +333,4 @@ namespace ICSharpCode.SharpZipLib.Core
 		#endregion
 	}
 }
+#endif

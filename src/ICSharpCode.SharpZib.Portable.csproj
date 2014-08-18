@@ -51,6 +51,7 @@
     <Compile Include="Core\INameTransform.cs" />
     <Compile Include="Core\IScanFilter.cs" />
     <Compile Include="Core\NameFilter.cs" />
+    <Compile Include="Core\PathFilter.cs" />
     <Compile Include="Core\StreamUtils.cs" />
     <Compile Include="Core\WindowsPathUtils.cs">
       <SubType>Code</SubType>
@@ -83,6 +84,7 @@
     <Compile Include="Zip\Compression\Streams\InflaterInputStream.cs" />
     <Compile Include="Zip\Compression\Streams\OutputWindow.cs" />
     <Compile Include="Zip\Compression\Streams\StreamManipulator.cs" />
+    <Compile Include="Zip\FastZip.cs" />
     <Compile Include="Zip\IEntryFactory.cs" />
     <Compile Include="Zip\WindowsNameTransform.cs" />
     <Compile Include="Zip\ZipConstants.cs" />

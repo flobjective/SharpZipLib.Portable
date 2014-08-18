@@ -1,3 +1,4 @@
+#if !PCL
 // FastZip.cs
 //
 // Copyright 2005 John Reilly
@@ -727,3 +728,4 @@ namespace ICSharpCode.SharpZipLib.Zip
 		#endregion
 	}
 }
+#endif
