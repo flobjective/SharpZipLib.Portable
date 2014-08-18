@@ -48,12 +48,12 @@ namespace ICSharpCode.SharpZipLib.Zip
 	/// <summary>
 	/// Represents exception conditions specific to Zip archive handling
 	/// </summary>
-#if !NETCF_1_0 && !NETCF_2_0 && !PCL
+#if !NETCF_1_0 && !NETCF_2_0 && !PCLx
 	[Serializable]
 #endif
 	public class ZipException : SharpZipBaseException
 	{
-#if !NETCF_1_0 && !NETCF_2_0 && !PCL
+#if !NETCF_1_0 && !NETCF_2_0 && !PCLx
 		/// <summary>
 		/// Deserialization constructor 
 		/// </summary>

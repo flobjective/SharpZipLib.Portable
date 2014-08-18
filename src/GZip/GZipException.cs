@@ -44,12 +44,12 @@ namespace ICSharpCode.SharpZipLib.GZip
 	/// <summary>
 	/// GZipException represents a Gzip specific exception	
     /// </summary>
-#if !NETCF_1_0 && !NETCF_2_0 && !PCL
+#if !NETCF_1_0 && !NETCF_2_0 && !PCLx
 	[Serializable]
 #endif
     public class GZipException : SharpZipBaseException
     {
-#if !NETCF_1_0 && !NETCF_2_0 && !PCL
+#if !NETCF_1_0 && !NETCF_2_0 && !PCLx
 		/// <summary>
 		/// Deserialization constructor 
 		/// </summary>

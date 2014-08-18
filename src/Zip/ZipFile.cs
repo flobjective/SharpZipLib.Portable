@@ -49,7 +49,7 @@ using System.IO;
 using System.Text;
 using System.Globalization;
 
-#if !NETCF_1_0 && !PCL
+#if !NETCF_1_0 && !PCLx
 using System.Security.Cryptography;
 using ICSharpCode.SharpZipLib.Encryption;
 #endif
@@ -3310,8 +3310,8 @@ namespace ICSharpCode.SharpZipLib.Zip
 		{
 			return TestLocalHeader(entry, HeaderTest.Extract);
 		}
-		
-#if !NETCF_1_0 && !PCL
+
+#if !NETCF_1_0 && !NOCRYPTO
 		Stream CreateAndInitDecryptionStream(Stream baseStream, ZipEntry entry)
 		{
 			CryptoStream result = null;
@@ -3398,8 +3398,8 @@ namespace ICSharpCode.SharpZipLib.Zip
 			}
 		}
 #endif
-		
-		static void WriteEncryptionHeader(Stream stream, long crcValue)
+
+        static void WriteEncryptionHeader(Stream stream, long crcValue)
 		{
 			byte[] cryptBuffer = new byte[ZipConstants.CryptoHeaderSize];
 			Random rnd = new Random();

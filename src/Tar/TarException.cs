@@ -44,12 +44,12 @@ namespace ICSharpCode.SharpZipLib.Tar {
 	/// <summary>
 	/// TarExceptions are used for exceptions specific to tar classes and code.	
     /// </summary>
-#if !NETCF_1_0 && !NETCF_2_0 && !PCL
+#if !NETCF_1_0 && !NETCF_2_0 && !PCLx
 	[Serializable]
 #endif
     public class TarException : SharpZipBaseException
     {
-#if !NETCF_1_0 && !NETCF_2_0 && !PCL
+#if !NETCF_1_0 && !NETCF_2_0 && !PCLx
 		/// <summary>
 		/// Deserialization constructor 
 		/// </summary>
