@@ -1,7 +1,6 @@
 ﻿#if PCLx
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,15 +8,18 @@ using System.Threading.Tasks;
 namespace ICSharpCode.SharpZipLib.VirtualFileSystem
 {
     /// <summary>
-    /// Virtual File System Stream
+    /// File informations
     /// </summary>
-    public abstract class VfsStream : Stream
+    public interface IFileInfo
     {
         /// <summary>
-        /// Name of file name
+        /// File name
         /// </summary>
-        public abstract String Name { get; }
+        String Name { get; }
+        /// <summary>
+        /// File attributes
+        /// </summary>
+        FileAttributes Attributes { get; }
     }
-
 }
 #endif

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if PCLx
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,8 +27,9 @@ namespace ICSharpCode.SharpZipLib.VirtualFileSystem
         /// </summary>
         public static IVirtualFileSystem Current
         {
-            get { return _Current ?? (_Current = new EmptyFileSystem()); }
+            get { return _Current ?? (_Current = new NullFileSystem()); }
         }
 
     }
 }
+#endif

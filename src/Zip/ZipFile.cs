@@ -58,6 +58,9 @@ using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Checksums;
 using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
 using ICSharpCode.SharpZipLib.Zip.Compression;
+#if PCLx
+using ICSharpCode.SharpZipLib.VirtualFileSystem;
+#endif
 
 namespace ICSharpCode.SharpZipLib.Zip 
 {
@@ -379,7 +382,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 			set { key = value; }
 		}
 		
-#if !NETCF_1_0 && !PCL
+#if !NETCF_1_0 && !NOCRYPTO
 		/// <summary>
 		/// Password to be used for encrypting/decrypting files.
 		/// </summary>
@@ -453,7 +456,11 @@ namespace ICSharpCode.SharpZipLib.Zip
 		/// <exception cref="ZipException">
 		/// The file doesn't contain a valid zip archive.
 		/// </exception>
+#if !PCLx
 		public ZipFile(FileStream file)
+#else
+        public ZipFile(VfsStream file)
+#endif
 		{
 			if ( file == null ) {
 				throw new ArgumentNullException("file");

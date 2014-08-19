@@ -1,17 +1,21 @@
-﻿using System;
+﻿#if PCLx
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ICSharpCode.SharpZipLib.VirtualFileSystem
 {
 
     /// <summary>
-    /// Empty file system
+    /// File attributes
     /// </summary>
-    public class EmptyFileSystem : IVirtualFileSystem
+    [Flags]
+    public enum FileAttributes : int
     {
 
     }
 
 }
+#endif

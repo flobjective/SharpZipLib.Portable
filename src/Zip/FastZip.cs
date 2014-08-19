@@ -459,7 +459,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 
 			using (zipFile_ = new ZipFile(inputStream)) {
 
-#if !NETCF_1_0
+#if !NETCF_1_0 && !NOCRYPTO
 				if (password_ != null) {
 					zipFile_.Password = password_;
 				}
