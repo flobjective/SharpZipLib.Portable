@@ -28,7 +28,7 @@ namespace ICSharpCode.SharpZipLib
         /// </summary>
         public static IVirtualFileSystem Current
         {
-            get { return _Current ?? (_Current = new NullFileSystem()); }
+            get { return _Current ?? (_Current = new DefaultFileSystem()); }
         }
 
     }

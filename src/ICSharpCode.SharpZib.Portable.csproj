@@ -74,7 +74,7 @@
     <Compile Include="VirtualFileSystem\IDirectoryInfo.cs" />
     <Compile Include="VirtualFileSystem\IFileInfo.cs" />
     <Compile Include="VirtualFileSystem\IVfsElement.cs" />
-    <Compile Include="VirtualFileSystem\NullFileSystem.cs" />
+    <Compile Include="VirtualFileSystem\DefaultFileSystem.cs" />
     <Compile Include="VirtualFileSystem\IVirtualFileSystem.cs" />
     <Compile Include="VirtualFileSystem\VfsExtensions.cs" />
     <Compile Include="VirtualFileSystem\VfsStream.cs" />
