@@ -502,7 +502,7 @@ namespace ICSharpCode.SharpZipLib.Tar
                 return new TarEntry[0];
             }
 
-            string[] list = VFS.Current.GetFiles(file).ToArray();
+            string[] list = VFS.Current.GetDirectoriesAndFiles(file).ToArray();
 #endif
 			TarEntry[] result = new TarEntry[list.Length];
 

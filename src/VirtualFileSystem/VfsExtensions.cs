@@ -40,6 +40,13 @@ namespace ICSharpCode.SharpZipLib.VirtualFileSystem
                 return false;
             }
         }
+        /// <summary>
+        /// List directorires and files 
+        /// </summary>
+        public static IEnumerable<String> GetDirectoriesAndFiles(this IVirtualFileSystem vfs, String directoryName)
+        {
+            return vfs.GetDirectories(directoryName).Concat(vfs.GetFiles(directoryName));
+        }
     }
 }
 #endif

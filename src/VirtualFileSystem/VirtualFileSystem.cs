@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ICSharpCode.SharpZipLib.VirtualFileSystem;
 
-namespace ICSharpCode.SharpZipLib.VirtualFileSystem
+namespace ICSharpCode.SharpZipLib
 {
     /// <summary>
     /// Virtual File System singleton
