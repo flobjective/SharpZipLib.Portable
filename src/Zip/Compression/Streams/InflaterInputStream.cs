@@ -342,7 +342,6 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression.Streams
 		#endregion
 	}
 	
-#if !PCL
 	/// <summary>
 	/// This filter stream is used to decompress data compressed using the "deflate"
 	/// format. The "deflate" format is described in RFC 1951.
@@ -352,14 +351,6 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression.Streams
 	///
 	/// Author of the original java version : John Leuner.
 	/// </summary>
-#else
-    /// <summary>
-    /// This filter stream is used to decompress data compressed using the "deflate"
-    /// format. The "deflate" format is described in RFC 1951.
-    ///
-    /// Author of the original java version : John Leuner.
-    /// </summary>
-#endif
 	public class InflaterInputStream : Stream
 	{
 		#region Constructors
@@ -662,7 +653,7 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression.Streams
 		/// Closes the input stream.  When <see cref="IsStreamOwner"></see>
 		/// is true the underlying stream is also closed.
 		/// </summary>
-#if !PCLx
+#if !PCL
 		public override void Close()
 		{
 			if ( !isClosed ) {

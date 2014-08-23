@@ -45,13 +45,13 @@ namespace ICSharpCode.SharpZipLib.Tar {
 	/// This exception is used to indicate that there is a problem
 	/// with a TAR archive header.
     /// </summary>
-#if !NETCF_1_0 && !NETCF_2_0 && !PCLx
+#if !NETCF_1_0 && !NETCF_2_0 && !PCL
 	[Serializable]
 #endif
     public class InvalidHeaderException : TarException
     {
 
-#if !NETCF_1_0 && !NETCF_2_0 && !PCLx
+#if !NETCF_1_0 && !NETCF_2_0 && !PCL
 		/// <summary>
 		/// Deserialization constructor 
 		/// </summary>

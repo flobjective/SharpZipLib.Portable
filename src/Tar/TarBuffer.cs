@@ -579,7 +579,8 @@ or which contains garbage records after a zero block.
 			if (outputStream != null) {
 				WriteFinalRecord();
 
-                if (isStreamOwner_) {
+                if (isStreamOwner_)
+                {
 #if !PCL
                     outputStream.Close();
 #else
@@ -589,7 +590,8 @@ or which contains garbage records after a zero block.
 				outputStream = null;
 			}
 			else if (inputStream != null) {
-                if (isStreamOwner_) {
+                if (isStreamOwner_)
+                {
 #if !PCL
                     inputStream.Close();
 #else

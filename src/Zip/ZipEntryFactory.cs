@@ -42,6 +42,9 @@ using System;
 using System.IO;
 
 using ICSharpCode.SharpZipLib.Core;
+#if PCL
+using ICSharpCode.SharpZipLib.VirtualFileSystem;
+#endif
 
 namespace ICSharpCode.SharpZipLib.Zip
 {
@@ -244,6 +247,13 @@ namespace ICSharpCode.SharpZipLib.Zip
 			{
 				fi = new FileInfo(fileName);
 			}
+#else
+            IFileInfo fi = null;
+            if (useFileSystem)
+            {
+                fi = VFS.Current.GetFileInfo(fileName);
+            }
+#endif
 
 			if ((fi != null) && fi.Exists)
 			{
@@ -254,8 +264,8 @@ namespace ICSharpCode.SharpZipLib.Zip
 						break;
 
 					case TimeSetting.CreateTimeUtc:
-#if NETCF_1_0 || NETCF_2_0
-						result.DateTime = fi.CreationTime.ToUniversalTime();
+#if NETCF_1_0 || NETCF_2_0 || PCL
+                        result.DateTime = fi.CreationTime.ToUniversalTime();
 #else
 						result.DateTime = fi.CreationTimeUtc;
 #endif
@@ -266,8 +276,8 @@ namespace ICSharpCode.SharpZipLib.Zip
 						break;
 
 					case TimeSetting.LastAccessTimeUtc:
-#if NETCF_1_0 || NETCF_2_0
-						result.DateTime = fi.LastAccessTime.ToUniversalTime();
+#if NETCF_1_0 || NETCF_2_0 || PCL
+                        result.DateTime = fi.LastAccessTime.ToUniversalTime();
 #else
 						result.DateTime = fi.LastAccessTimeUtc;
 #endif
@@ -278,8 +288,8 @@ namespace ICSharpCode.SharpZipLib.Zip
 						break;
 
 					case TimeSetting.LastWriteTimeUtc:
-#if NETCF_1_0 || NETCF_2_0
-						result.DateTime = fi.LastWriteTime.ToUniversalTime();
+#if NETCF_1_0 || NETCF_2_0 || PCL
+                        result.DateTime = fi.LastWriteTime.ToUniversalTime();
 #else
 						result.DateTime = fi.LastWriteTimeUtc;
 #endif
@@ -300,14 +310,11 @@ namespace ICSharpCode.SharpZipLib.Zip
 			}
 			else
 			{
-#endif
 				if (timeSetting_ == TimeSetting.Fixed)
 				{
 					result.DateTime = fixedDateTime_;
 				}
-#if !PCL
 			}
-#endif
 
 			if (useAttributes)
 			{
@@ -342,14 +349,20 @@ namespace ICSharpCode.SharpZipLib.Zip
             result.Size = 0;
 			
 			int externalAttributes = 0;
+
 #if !PCL
 			DirectoryInfo di = null;
-
 			if (useFileSystem)
 			{
 				di = new DirectoryInfo(directoryName);
 			}
-
+#else
+            IDirectoryInfo di = null;
+            if (useFileSystem)
+            {
+                di = VFS.Current.GetDirectoryInfo(directoryName);
+            }
+#endif
 
 			if ((di != null) && di.Exists)
 			{
@@ -360,8 +373,8 @@ namespace ICSharpCode.SharpZipLib.Zip
 						break;
 
 					case TimeSetting.CreateTimeUtc:
-#if NETCF_1_0 || NETCF_2_0
-						result.DateTime = di.CreationTime.ToUniversalTime();
+#if NETCF_1_0 || NETCF_2_0 || PCL
+                        result.DateTime = di.CreationTime.ToUniversalTime();
 #else
 						result.DateTime = di.CreationTimeUtc;
 #endif
@@ -372,8 +385,8 @@ namespace ICSharpCode.SharpZipLib.Zip
 						break;
 
 					case TimeSetting.LastAccessTimeUtc:
-#if NETCF_1_0 || NETCF_2_0
-						result.DateTime = di.LastAccessTime.ToUniversalTime();
+#if NETCF_1_0 || NETCF_2_0 || PCL
+                        result.DateTime = di.LastAccessTime.ToUniversalTime();
 #else
 						result.DateTime = di.LastAccessTimeUtc;
 #endif
@@ -384,8 +397,8 @@ namespace ICSharpCode.SharpZipLib.Zip
 						break;
 
 					case TimeSetting.LastWriteTimeUtc:
-#if NETCF_1_0 || NETCF_2_0
-						result.DateTime = di.LastWriteTime.ToUniversalTime();
+#if NETCF_1_0 || NETCF_2_0 || PCL
+                        result.DateTime = di.LastWriteTime.ToUniversalTime();
 #else
 						result.DateTime = di.LastWriteTimeUtc;
 #endif
@@ -403,14 +416,11 @@ namespace ICSharpCode.SharpZipLib.Zip
 			}
 			else
 			{
-#endif
 				if (timeSetting_ == TimeSetting.Fixed)
 				{
 					result.DateTime = fixedDateTime_;
 				}
-#if !PCL
 			}
-#endif
 
 			// Always set directory attribute on.
 			externalAttributes |= (setAttributes_ | 16);

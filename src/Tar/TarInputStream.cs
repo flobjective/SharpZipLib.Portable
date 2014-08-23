@@ -635,11 +635,7 @@ namespace ICSharpCode.SharpZipLib.Tar
 			/// <returns>A new <see cref="TarEntry"/></returns>
 			public TarEntry CreateEntryFromFile(string fileName)
 			{
-#if !PCL
 				return TarEntry.CreateEntryFromFile(fileName);
-#else
-                throw new InvalidOperationException("Not available in Portable Class Library");
-#endif
 			}
 
 			/// <summary>

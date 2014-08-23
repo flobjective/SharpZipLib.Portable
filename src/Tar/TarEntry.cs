@@ -35,6 +35,10 @@
 
 using System;
 using System.IO;
+#if PCL
+using System.Linq;
+using ICSharpCode.SharpZipLib.VirtualFileSystem;
+#endif
 
 namespace ICSharpCode.SharpZipLib.Tar 
 {
@@ -112,9 +116,7 @@ namespace ICSharpCode.SharpZipLib.Tar
 		public object Clone()
 		{
 			TarEntry entry = new TarEntry();
-#if !PCL
 			entry.file = file;
-#endif
 			entry.header = (TarHeader)header.Clone();
 			entry.Name = Name;
 			return entry;
@@ -133,7 +135,7 @@ namespace ICSharpCode.SharpZipLib.Tar
 			TarEntry.NameTarHeader(entry.header, name);
 			return entry;
 		}
-#if !PCL
+
 		/// <summary>
 		/// Construct an entry for a file. File is set to file, and the
 		/// header is constructed from information from the file.
@@ -146,7 +148,7 @@ namespace ICSharpCode.SharpZipLib.Tar
 			entry.GetFileTarHeader(entry.header, fileName);
 			return entry;
 		}
-#endif
+
 		/// <summary>
 		/// Determine if the two entries are equal. Equality is determined
 		/// by the header names being equal.
@@ -315,7 +317,6 @@ namespace ICSharpCode.SharpZipLib.Tar
 			}
 		}
 		
-#if !PCL
 		/// <summary>
 		/// Get this entry's file.
 		/// </summary>
@@ -327,7 +328,6 @@ namespace ICSharpCode.SharpZipLib.Tar
 				return file;
 			}
 		}
-#endif
 
 		/// <summary>
 		/// Get/set this entry's recorded file size.
@@ -349,12 +349,16 @@ namespace ICSharpCode.SharpZipLib.Tar
 		/// </returns>
 		public bool IsDirectory {
 			get {
+                if (file != null)
+                {
 #if !PCL
-				if (file != null) {
 					return Directory.Exists(file);
-				}
-#endif		
-				if (header != null) {
+#else
+                    return VFS.Current.DirectoryExists(file);
+#endif
+                }
+                if (header != null)
+                {
 					if ((header.TypeFlag == TarHeader.LF_DIR) || Name.EndsWith( "/" )) {
 						return true;
 					}
@@ -362,7 +366,7 @@ namespace ICSharpCode.SharpZipLib.Tar
 				return false;
 			}
 		}
-#if !PCL
+
 		/// <summary>
 		/// Fill in a TarHeader with information from a File.
 		/// </summary>
@@ -392,9 +396,14 @@ namespace ICSharpCode.SharpZipLib.Tar
 			if (name.IndexOf(Environment.CurrentDirectory) == 0) {
 				name = name.Substring(Environment.CurrentDirectory.Length);
 			}
+#elif PCL
+            // 23-Jan-2004 GnuTar allows device names in path where the name is not local to the current directory
+			if (name.IndexOf(VFS.Current.CurrentDirectory) == 0) {
+                name = name.Substring(VFS.Current.CurrentDirectory.Length);
+			}
 #endif
-			
-/*
+
+            /*
 			if (Path.DirectorySeparatorChar == '\\') 
 			{
 				// check if the OS is Windows
@@ -412,7 +421,11 @@ namespace ICSharpCode.SharpZipLib.Tar
 			}
 */
 
+#if !PCL
 			name = name.Replace(Path.DirectorySeparatorChar, '/');
+#else
+            name = name.Replace(VFS.Current.DirectorySeparatorChar, '/');
+#endif
 
 			// No absolute pathnames
 			// Windows (and Posix?) paths can start with UNC style "\\NetworkDrive\",
@@ -423,22 +436,47 @@ namespace ICSharpCode.SharpZipLib.Tar
 
 			header.LinkName = String.Empty;
 			header.Name     = name;
-			
-			if (Directory.Exists(file)) {
-				header.Mode     = 1003; // Magic number for security access for a UNIX filesystem
-				header.TypeFlag = TarHeader.LF_DIR;
-				if ( (header.Name.Length == 0) || header.Name[header.Name.Length - 1] != '/') {
-					header.Name = header.Name + "/";
-				}
-				
-				header.Size     = 0;
-			} else {
-				header.Mode     = 33216; // Magic number for security access for a UNIX filesystem
-				header.TypeFlag = TarHeader.LF_NORMAL;
-				header.Size     = new FileInfo(file.Replace('/', Path.DirectorySeparatorChar)).Length;
-			}
 
+#if !PCL
+            if (Directory.Exists(file))
+            {
+                header.Mode = 1003; // Magic number for security access for a UNIX filesystem
+                header.TypeFlag = TarHeader.LF_DIR;
+                if ((header.Name.Length == 0) || header.Name[header.Name.Length - 1] != '/')
+                {
+                    header.Name = header.Name + "/";
+                }
+
+                header.Size = 0;
+            }
+            else
+            {
+                header.Mode = 33216; // Magic number for security access for a UNIX filesystem
+                header.TypeFlag = TarHeader.LF_NORMAL;
+                header.Size = new FileInfo(file.Replace('/', Path.DirectorySeparatorChar)).Length;
+            }
 			header.ModTime = System.IO.File.GetLastWriteTime(file.Replace('/', Path.DirectorySeparatorChar)).ToUniversalTime();
+#else
+            if (VFS.Current.DirectoryExists(file))
+            {
+                header.Mode = 1003; // Magic number for security access for a UNIX filesystem
+                header.TypeFlag = TarHeader.LF_DIR;
+                if ((header.Name.Length == 0) || header.Name[header.Name.Length - 1] != '/')
+                {
+                    header.Name = header.Name + "/";
+                }
+
+                header.Size = 0;
+            }
+            else
+            {
+                header.Mode = 33216; // Magic number for security access for a UNIX filesystem
+                header.TypeFlag = TarHeader.LF_NORMAL;
+                header.Size = VFS.Current.GetFileInfo(file.Replace('/', VFS.Current.DirectorySeparatorChar)).Length;
+            }
+            header.ModTime = VFS.Current.GetFileInfo(file.Replace('/', VFS.Current.DirectorySeparatorChar)).LastWriteTime.ToUniversalTime();
+#endif
+
 			header.DevMajor = 0;
 			header.DevMinor = 0;
 		}
@@ -451,12 +489,21 @@ namespace ICSharpCode.SharpZipLib.Tar
 		/// An array of TarEntry's for this entry's children.
 		/// </returns>
 		public TarEntry[] GetDirectoryEntries()
-		{
+        {
+#if !PCL
 			if ( (file == null) || !Directory.Exists(file)) {
 				return new TarEntry[0];
 			}
 			
 			string[]   list   = Directory.GetFileSystemEntries(file);
+#else
+            if ((file == null) || !VFS.Current.DirectoryExists(file))
+            {
+                return new TarEntry[0];
+            }
+
+            string[] list = VFS.Current.GetFiles(file).ToArray();
+#endif
 			TarEntry[] result = new TarEntry[list.Length];
 
 			for (int i = 0; i < list.Length; ++i) {
@@ -465,7 +512,7 @@ namespace ICSharpCode.SharpZipLib.Tar
 			
 			return result;
 		}
-#endif
+
 		/// <summary>
 		/// Write an entry's header information to a header buffer.
 		/// </summary>
@@ -532,12 +579,10 @@ namespace ICSharpCode.SharpZipLib.Tar
 		}
 
 		#region Instance Fields
-#if !PCL
-		/// <summary>
+        /// <summary>
 		/// The name of the file this entry represents or null if the entry is not based on a file.
 		/// </summary>
 		string file;
-#endif
 		/// <summary>
 		/// The entry's header information.
 		/// </summary>

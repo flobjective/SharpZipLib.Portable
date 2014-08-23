@@ -8,14 +8,10 @@ using System.Threading.Tasks;
 namespace ICSharpCode.SharpZipLib.VirtualFileSystem
 {
     /// <summary>
-    /// File informations
+    /// Directory informations
     /// </summary>
-    public interface IFileInfo : IVfsElement
+    public interface IDirectoryInfo : IVfsElement
     {
-        /// <summary>
-        /// Size of file
-        /// </summary>
-        long Length { get; }
     }
 }
 #endif

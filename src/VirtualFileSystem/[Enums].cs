@@ -1,4 +1,4 @@
-﻿#if PCLx
+﻿#if PCL
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +14,26 @@ namespace ICSharpCode.SharpZipLib.VirtualFileSystem
     [Flags]
     public enum FileAttributes : int
     {
-
+        /// <summary>
+        /// File is read only
+        /// </summary>
+        ReadOnly = 1,
+        /// <summary>
+        /// File is hidden
+        /// </summary>
+        Hidden = 2,
+        /// <summary>
+        /// File is directory
+        /// </summary>
+        Directory = 16,
+        /// <summary>
+        /// File is for archive
+        /// </summary>
+        Archive = 32,
+        /// <summary>
+        /// File is normal
+        /// </summary>
+        Normal = 128
     }
 
 }

@@ -1,4 +1,4 @@
-﻿#if PCLx
+﻿#if PCL
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +10,7 @@ namespace ICSharpCode.SharpZipLib.VirtualFileSystem
     /// <summary>
     /// Virtual File System singleton
     /// </summary>
-    public static class VirtualFileSystem
+    public static class VFS
     {
         private static IVirtualFileSystem _Current;
 

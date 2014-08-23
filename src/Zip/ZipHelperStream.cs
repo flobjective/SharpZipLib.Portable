@@ -36,6 +36,9 @@
 using System;
 using System.IO;
 using System.Text;
+#if PCL
+using ICSharpCode.SharpZipLib.VirtualFileSystem;
+#endif
 
 namespace ICSharpCode.SharpZipLib.Zip
 {
@@ -105,17 +108,20 @@ namespace ICSharpCode.SharpZipLib.Zip
 	internal class ZipHelperStream : Stream
 	{
 		#region Constructors
-#if !PCL
 		/// <summary>
 		/// Initialise an instance of this class.
 		/// </summary>
 		/// <param name="name">The name of the file to open.</param>
 		public ZipHelperStream(string name)
 		{
+#if !PCL
 			stream_ = new FileStream(name, FileMode.Open, FileAccess.ReadWrite);
+#else
+            stream_ = VFS.Current.OpenWriteFile(name);
+#endif
 			isOwner_ = true;
 		}
-#endif
+
 		/// <summary>
 		/// Initialise a new instance of <see cref="ZipHelperStream"/>.
 		/// </summary>

@@ -44,13 +44,13 @@ namespace ICSharpCode.SharpZipLib.BZip2
 	/// <summary>
 	/// BZip2Exception represents exceptions specific to Bzip2 algorithm
     /// </summary>
-#if !NETCF_1_0 && !NETCF_2_0 && !PCLx
+#if !NETCF_1_0 && !NETCF_2_0 && !PCL
 	[Serializable]
 #endif
     public class BZip2Exception : SharpZipBaseException
     {
 
-#if !NETCF_1_0 && !NETCF_2_0 && !PCLx
+#if !NETCF_1_0 && !NETCF_2_0 && !PCL
 		/// <summary>
 		/// Deserialization constructor 
 		/// </summary>

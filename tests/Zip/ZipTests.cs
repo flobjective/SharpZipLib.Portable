@@ -4086,7 +4086,7 @@ namespace ICSharpCode.SharpZipLib.Tests.Zip
 			int combinedAttributes;
 
 			DateTime startTime = DateTime.Now;
-
+            
 			factory.Setting = ZipEntryFactory.TimeSetting.CreateTime;
 			factory.GetAttributes = ~((int)FileAttributes.ReadOnly);
 			factory.SetAttributes = (int)FileAttributes.ReadOnly;

@@ -513,7 +513,7 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression.Streams
 		/// Calls <see cref="Finish"/> and closes the underlying
 		/// stream when <see cref="IsStreamOwner"></see> is true.
         /// </summary>
-#if !PCLx
+#if !PCL
 		public override void Close()
         {
             if (!isClosed_)

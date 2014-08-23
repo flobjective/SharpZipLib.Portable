@@ -1,4 +1,3 @@
-#if !PCL
 // PathFilter.cs
 //
 // Copyright 2005 John Reilly
@@ -36,6 +35,9 @@
 
 using System;
 using System.IO;
+#if PCL
+using ICSharpCode.SharpZipLib.VirtualFileSystem;
+#endif
 
 namespace ICSharpCode.SharpZipLib.Core
 {
@@ -63,13 +65,19 @@ namespace ICSharpCode.SharpZipLib.Core
 		/// </summary>
 		/// <param name="name">The name to test.</param>
 		/// <returns>True if the name matches, false otherwise.</returns>
+#if !PCL
 		/// <remarks><see cref="Path.GetFullPath(string)"/> is used to get the full path before matching.</remarks>
+#endif
 		public virtual bool IsMatch(string name)
 		{
 			bool result = false;
 
 			if ( name != null ) {
+#if !PCL
 				string cooked = (name.Length > 0) ? Path.GetFullPath(name) : "";
+#else
+                string cooked = (name.Length > 0) ? VFS.Current.GetFullPath(name) : "";
+#endif
 				result = nameFilter_.IsMatch(cooked);
 			}
 			return result;
@@ -147,8 +155,13 @@ namespace ICSharpCode.SharpZipLib.Core
 		{
 			bool result = base.IsMatch(name);
 
-			if ( result ) {
+			if ( result )
+            {
+#if !PCL
 				FileInfo fileInfo = new FileInfo(name);
+#else
+                IFileInfo fileInfo = VFS.Current.GetFileInfo(name);
+#endif
 				result = 
 					(MinSize <= fileInfo.Length) &&
 					(MaxSize >= fileInfo.Length) &&
@@ -286,8 +299,13 @@ namespace ICSharpCode.SharpZipLib.Core
 		{
 			bool result = base.IsMatch(name);
 
-			if ( result ) {
+			if ( result )
+            {
+#if !PCL
 				FileInfo fileInfo = new FileInfo(name);
+#else
+                IFileInfo fileInfo = VFS.Current.GetFileInfo(name);
+#endif
 				long length = fileInfo.Length;
 				result = 
 					(MinSize <= length) &&
@@ -333,4 +351,3 @@ namespace ICSharpCode.SharpZipLib.Core
 		#endregion
 	}
 }
-#endif

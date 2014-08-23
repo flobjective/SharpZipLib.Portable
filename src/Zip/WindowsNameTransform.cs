@@ -36,6 +36,9 @@
 using System;
 using System.IO;
 using System.Text;
+#if PCL
+using ICSharpCode.SharpZipLib.VirtualFileSystem;
+#endif
 
 using ICSharpCode.SharpZipLib.Core;
 
@@ -80,7 +83,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 #if !PCL
 				_baseDirectory = Path.GetFullPath(value);
 #else
-                _baseDirectory = value;
+                _baseDirectory = VFS.Current.GetFullPath(value);
 #endif
 			}
 		}

@@ -30,7 +30,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\bin\</OutputPath>
-    <DefineConstants>TRACE;PCLx;NOCRYPTO</DefineConstants>
+    <DefineConstants>TRACE;PCL;NOCRYPTO</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>..\bin\ICSharpCode.SharpZipLib.Portable.xml</DocumentationFile>
@@ -71,9 +71,12 @@
     <Compile Include="Tar\TarHeader.cs" />
     <Compile Include="Tar\TarInputStream.cs" />
     <Compile Include="Tar\TarOutputStream.cs" />
+    <Compile Include="VirtualFileSystem\IDirectoryInfo.cs" />
     <Compile Include="VirtualFileSystem\IFileInfo.cs" />
+    <Compile Include="VirtualFileSystem\IVfsElement.cs" />
     <Compile Include="VirtualFileSystem\NullFileSystem.cs" />
     <Compile Include="VirtualFileSystem\IVirtualFileSystem.cs" />
+    <Compile Include="VirtualFileSystem\VfsExtensions.cs" />
     <Compile Include="VirtualFileSystem\VfsStream.cs" />
     <Compile Include="VirtualFileSystem\VirtualFileSystem.cs" />
     <Compile Include="VirtualFileSystem\[Enums].cs" />
