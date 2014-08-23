@@ -37,6 +37,10 @@ using System;
 using System.IO;
 using ICSharpCode.SharpZipLib.Core;
 
+#if PCL
+using ICSharpCode.SharpZipLib.VirtualFileSystem;
+#endif
+
 namespace ICSharpCode.SharpZipLib.Zip
 {
 	/// <summary>
@@ -337,7 +341,11 @@ namespace ICSharpCode.SharpZipLib.Zip
 		public void CreateZip(string zipFileName, string sourceDirectory, 
 			bool recurse, string fileFilter, string directoryFilter)
 		{
+#if !PCL
 			CreateZip(File.Create(zipFileName), sourceDirectory, recurse, fileFilter, directoryFilter);
+#else
+            CreateZip(VFS.Current.CreateFile(zipFileName), sourceDirectory, recurse, fileFilter, directoryFilter);
+#endif
 		}
 		
 		/// <summary>
@@ -349,7 +357,11 @@ namespace ICSharpCode.SharpZipLib.Zip
 		/// <param name="fileFilter">The file filter to apply.</param>
 		public void CreateZip(string zipFileName, string sourceDirectory, bool recurse, string fileFilter)
 		{
+#if !PCL
 			CreateZip(File.Create(zipFileName), sourceDirectory, recurse, fileFilter, null);
+#else
+            CreateZip(VFS.Current.CreateFile(zipFileName), sourceDirectory, recurse, fileFilter, null);
+#endif
 		}
 
 		/// <summary>
@@ -423,7 +435,11 @@ namespace ICSharpCode.SharpZipLib.Zip
 							   Overwrite overwrite, ConfirmOverwriteDelegate confirmDelegate, 
 							   string fileFilter, string directoryFilter, bool restoreDateTime)
 		{
+#if !PCL
 			Stream inputStream = File.Open(zipFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+#else
+            Stream inputStream = VFS.Current.OpenReadFile(zipFileName);
+#endif
 			ExtractZip(inputStream, targetDirectory, overwrite, confirmDelegate, fileFilter, directoryFilter, restoreDateTime, true);
 		}
 
@@ -458,7 +474,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 
 			using (zipFile_ = new ZipFile(inputStream)) {
 
-#if !NETCF_1_0
+#if !NETCF_1_0 && !NOCRYPTO
 				if (password_ != null) {
 					zipFile_.Password = password_;
 				}
@@ -515,7 +531,12 @@ namespace ICSharpCode.SharpZipLib.Zip
                     // The open below is equivalent to OpenRead which gaurantees that if opened the 
                     // file will not be changed by subsequent openers, but precludes opening in some cases
                     // were it could succeed. ie the open may fail as its already open for writing and the share mode should reflect that.
+#if !PCL
                     using (FileStream stream = File.Open(e.Name, FileMode.Open, FileAccess.Read, FileShare.Read)) {
+#else
+                    using (Stream stream = VFS.Current.OpenReadFile(e.Name))
+                    {
+#endif
                         ZipEntry entry = entryFactory_.MakeFileEntry(e.Name);
                         outputStream_.PutNextEntry(entry);
                         AddFileContents(e.Name, stream);
@@ -560,7 +581,12 @@ namespace ICSharpCode.SharpZipLib.Zip
 		{
 			bool proceed = true;
 			if ( overwrite_ != Overwrite.Always ) {
+#if !PCL
 				if ( File.Exists(targetName) ) {
+#else
+                if (VFS.Current.FileExists(targetName))
+                {
+#endif
 					if ( (overwrite_ == Overwrite.Prompt) && (confirmDelegate_ != null) ) {
 						proceed = confirmDelegate_(targetName);
 					}
@@ -576,8 +602,14 @@ namespace ICSharpCode.SharpZipLib.Zip
 				}
 			
 				if ( continueRunning_ ) {
-					try {
+					try
+                    {
+#if !PCL
 						using ( FileStream outputStream = File.Create(targetName) ) {
+#else
+                        using (Stream outputStream = VFS.Current.CreateFile(targetName))
+                        {
+#endif
 							if ( buffer_ == null ) {
 								buffer_ = new byte[4096];
 							}
@@ -597,15 +629,24 @@ namespace ICSharpCode.SharpZipLib.Zip
 						}
 
 #if !NETCF_1_0 && !NETCF_2_0
-						if ( restoreDateTimeOnExtract_ ) {
+						if ( restoreDateTimeOnExtract_ )
+                        {
+#if !PCL
 							File.SetLastWriteTime(targetName, entry.DateTime);
+#else
+                            VFS.Current.SetLastWriteTime(targetName, entry.DateTime);
+#endif
 						}
 						
 						if ( RestoreAttributesOnExtract && entry.IsDOSEntry && (entry.ExternalFileAttributes != -1)) {
 							FileAttributes fileAttributes = (FileAttributes) entry.ExternalFileAttributes;
 							// TODO: FastZip - Setting of other file attributes on extraction is a little trickier.
 							fileAttributes &= (FileAttributes.Archive | FileAttributes.Normal | FileAttributes.ReadOnly | FileAttributes.Hidden);
+#if !PCL
 							File.SetAttributes(targetName, fileAttributes);
+#else
+                            VFS.Current.SetAttributes(targetName, fileAttributes);
+#endif
 						}
 #endif						
 					}
@@ -646,15 +687,30 @@ namespace ICSharpCode.SharpZipLib.Zip
 					if ( entry.IsDirectory ) {
 						dirName = targetName;
 					}
-					else {
+					else
+                    {
+#if !PCL
 						dirName = Path.GetDirectoryName(Path.GetFullPath(targetName));
+#else
+                        dirName = Path.GetDirectoryName(VFS.Current.GetFullPath(targetName));
+#endif
 					}
-			}
-			
+            }
+
+#if !PCL
 			if ( doExtraction && !Directory.Exists(dirName) ) {
+#else
+            if (doExtraction && !VFS.Current.DirectoryExists(dirName))
+            {
+#endif
 				if ( !entry.IsDirectory || CreateEmptyDirectories ) {
-					try {
+					try
+                    {
+#if !PCL
 						Directory.CreateDirectory(dirName);
+#else
+                        VFS.Current.CreateDirectory(dirName);
+#endif
 					}
 					catch (Exception ex) {
 						doExtraction = false;
@@ -678,12 +734,18 @@ namespace ICSharpCode.SharpZipLib.Zip
 				ExtractFileEntry(entry, targetName);
 			}
 		}
-
+#if !PCL
 		static int MakeExternalAttributes(FileInfo info)
 		{
 			return (int)info.Attributes;
 		}
-		
+#else
+        static int MakeExternalAttributes(IFileInfo info)
+        {
+            return (int)info.Attributes;
+        }
+#endif
+
 #if NET_1_0 || NET_1_1 || NETCF_1_0
 		static bool NameIsValid(string name)
 		{

@@ -406,7 +406,8 @@ namespace ICSharpCode.SharpZipLib.BZip2
 			}
 			finally {
 				if ( disposing ) {
-					if ( IsStreamOwner ) {
+					if ( IsStreamOwner )
+                    {
 #if !PCL
 						baseStream.Close();
 #else

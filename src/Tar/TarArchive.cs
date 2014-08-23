@@ -40,6 +40,9 @@
 using System;
 using System.IO;
 using System.Text;
+#if PCL
+using ICSharpCode.SharpZipLib.VirtualFileSystem;
+#endif
 
 namespace ICSharpCode.SharpZipLib.Tar
 {
@@ -518,7 +521,7 @@ namespace ICSharpCode.SharpZipLib.Tar
 				OnProgressMessageEvent(entry, null);
 			}
 		}
-#if !PCL		
+
 		/// <summary>
 		/// Perform the "extract" command and extract the contents of the archive.
 		/// </summary>
@@ -562,10 +565,14 @@ namespace ICSharpCode.SharpZipLib.Tar
 				// NOTE:
 				// for UNC names...  \\machine\share\zoom\beet.txt gives \zoom\beet.txt
 				name = name.Substring(Path.GetPathRoot(name).Length);
-			}
-			
+            }
+
+#if !PCL
 			name = name.Replace('/', Path.DirectorySeparatorChar);
-			
+#else
+            name = name.Replace('/', VFS.Current.DirectorySeparatorChar);
+#endif
+	
 			string destFile = Path.Combine(destDir, name);
 			
 			if (entry.IsDirectory) {
@@ -575,7 +582,11 @@ namespace ICSharpCode.SharpZipLib.Tar
 				EnsureDirectoryExists(parentDirectory);
 				
 				bool process = true;
+#if !PCL
 				FileInfo fileInfo = new FileInfo(destFile);
+#else
+                IFileInfo fileInfo = VFS.Current.GetFileInfo(destFile);
+#endif
 				if (fileInfo.Exists) {
 					if (keepOldFiles) {
 						OnProgressMessageEvent(entry, "Destination file already exists");
@@ -588,8 +599,12 @@ namespace ICSharpCode.SharpZipLib.Tar
 				
 				if (process) {
 					bool asciiTrans = false;
-					
+
+#if !PCL
 					Stream outputStream = File.Create(destFile);
+#else
+                    Stream outputStream = VFS.Current.CreateFile(destFile);
+#endif
 					if (this.asciiTranslate) {
 						asciiTrans = !IsBinary(destFile);
 					}
@@ -610,8 +625,13 @@ namespace ICSharpCode.SharpZipLib.Tar
 						
 						if (asciiTrans) {
 							for (int off = 0, b = 0; b < numRead; ++b) {
-								if (rdbuf[b] == 10) {
+								if (rdbuf[b] == 10)
+                                {
+#if !PCL
 									string s = Encoding.ASCII.GetString(rdbuf, off, (b - off));
+#else
+                                    string s = AsciiEncoding.Default.GetString(rdbuf, off, (b - off));
+#endif
 									outw.WriteLine(s);
 									off = b + 1;
 								}
@@ -619,13 +639,24 @@ namespace ICSharpCode.SharpZipLib.Tar
 						} else {
 							outputStream.Write(rdbuf, 0, numRead);
 						}
-					}
-					
+                    }
+
+#if !PCL
 					if (asciiTrans) {
 						outw.Close();
 					} else {
 						outputStream.Close();
 					}
+#else
+                    if (asciiTrans)
+                    {
+                        outw.Dispose();
+                    }
+                    else
+                    {
+                        outputStream.Dispose();
+                    }
+#endif
 				}
 			}
 		}
@@ -700,27 +731,45 @@ namespace ICSharpCode.SharpZipLib.Tar
 			
 			if (asciiTranslate && !entry.IsDirectory) {
 
-				if (!IsBinary(entryFilename)) {
+				if (!IsBinary(entryFilename))
+                {
+#if !PCL
 					tempFileName = Path.GetTempFileName();
-					
+#else
+                    tempFileName = VFS.Current.GetTempFileName();
+#endif
+#if !PCL
 					using (StreamReader inStream  = File.OpenText(entryFilename)) {
 						using (Stream outStream = File.Create(tempFileName)) {
-						
+#else
+                    using (StreamReader inStream = new StreamReader(VFS.Current.OpenReadFile(entryFilename)))
+                    {
+                        using (Stream outStream = VFS.Current.CreateFile(tempFileName))
+                        {
+#endif
 							while (true) {
 								string line = inStream.ReadLine();
 								if (line == null) {
 									break;
-								}
+                                }
+#if !PCL
 								byte[] data = Encoding.ASCII.GetBytes(line);
+#else
+                                byte[] data = AsciiEncoding.Default.GetBytes(line);
+#endif
 								outStream.Write(data, 0, data.Length);
 								outStream.WriteByte((byte)'\n');
 							}
 							
 							outStream.Flush();
 						}
-					}
-					
+                    }
+
+#if !PCL
 					entry.Size = new FileInfo(tempFileName).Length;
+#else
+                    entry.Size = VFS.Current.GetFileInfo(tempFileName).Length;
+#endif
 					entryFilename = tempFileName;
 				}
 			}
@@ -751,8 +800,14 @@ namespace ICSharpCode.SharpZipLib.Tar
 					}
 				}
 			}
-			else {
+			else
+            {
+#if !PCL
 				using (Stream inputStream = File.OpenRead(entryFilename)) {
+#else
+                using (Stream inputStream = VFS.Current.OpenReadFile(entryFilename))
+                {
+#endif
 					byte[] localBuffer = new byte[32 * 1024];
 					while (true) {
 						int numRead = inputStream.Read(localBuffer, 0, localBuffer.Length);
@@ -765,14 +820,19 @@ namespace ICSharpCode.SharpZipLib.Tar
 					}
 				}
 				
-				if ( (tempFileName != null) && (tempFileName.Length > 0) ) {
+				if ( (tempFileName != null) && (tempFileName.Length > 0) )
+                {
+#if !PCL
 					File.Delete(tempFileName);
+#else
+                    VFS.Current.DeleteFile(tempFileName);
+#endif
 				}
 				
 				tarOut.CloseEntry();
 			}
 		}
-#endif
+
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
@@ -801,7 +861,8 @@ namespace ICSharpCode.SharpZipLib.Tar
 #endif
 					}
 		
-					if ( tarIn != null ) {
+					if ( tarIn != null )
+                    {
 #if !PCL
 						tarIn.Close();
 #else
@@ -829,12 +890,21 @@ namespace ICSharpCode.SharpZipLib.Tar
 			Dispose(false);
 		}
 
-#if !PCL
 		static void EnsureDirectoryExists(string directoryName)
-		{
+        {
+#if !PCL
 			if (!Directory.Exists(directoryName)) {
-				try {
+#else
+            if (!VFS.Current.DirectoryExists(directoryName))
+            {
+#endif
+				try
+                {
+#if !PCL
 					Directory.CreateDirectory(directoryName);
+#else
+                    VFS.Current.CreateDirectory(directoryName);
+#endif
 				}
 				catch (Exception e) {
 					throw new TarException("Exception creating directory '" + directoryName + "', " + e.Message, e);
@@ -847,8 +917,12 @@ namespace ICSharpCode.SharpZipLib.Tar
 		// This assumes that byte values 0-7, 14-31 or 255 are binary
 		// and that all non text files contain one of these values
 		static bool IsBinary(string filename)
-		{
+        {
+#if !PCL
 			using (FileStream fs = File.OpenRead(filename))
+#else
+            using (Stream fs = VFS.Current.OpenReadFile(filename))
+#endif
 			{
 				int sampleSize = Math.Min(4096, (int)fs.Length);
 				byte[] content = new byte[sampleSize];
@@ -864,7 +938,6 @@ namespace ICSharpCode.SharpZipLib.Tar
 			}
 			return false;
 		}		
-#endif
 
 		#region Instance Fields
 		bool keepOldFiles;

@@ -268,7 +268,7 @@ namespace ICSharpCode.SharpZipLib.Core
 
 					// NOTE: Regular expressions can fail to compile here for a number of reasons that cause an exception
 					// these are left unhandled here as the caller is responsible for ensuring all is valid.
-					// several functions IsValidFilterExpression and IsValidExpression are provided for such checking
+                    // several functions IsValidFilterExpression and IsValidExpression are provided for such checking
 #if !PCL
 					if ( include ) {
 						inclusions_.Add(new Regex(toCompile, RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline));

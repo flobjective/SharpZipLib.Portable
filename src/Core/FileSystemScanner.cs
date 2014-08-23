@@ -35,6 +35,10 @@
 
 
 using System;
+#if PCL
+using System.Linq;
+using ICSharpCode.SharpZipLib.VirtualFileSystem;
+#endif
 
 namespace ICSharpCode.SharpZipLib.Core
 {
@@ -287,7 +291,6 @@ namespace ICSharpCode.SharpZipLib.Core
 	public delegate void FileFailureHandler(object sender, ScanFailureEventArgs e);
 	#endregion
 
-#if !PCL
 	/// <summary>
 	/// FileSystemScanner provides facilities scanning of files and directories.
 	/// </summary>
@@ -459,8 +462,13 @@ namespace ICSharpCode.SharpZipLib.Core
 		void ScanDir(string directory, bool recurse)
 		{
 
-			try {
+			try
+            {
+#if !PCL
 				string[] names = System.IO.Directory.GetFiles(directory);
+#else
+                string[] names = VFS.Current.GetFiles(directory).ToArray();
+#endif
 				bool hasMatch = false;
 				for (int fileIndex = 0; fileIndex < names.Length; ++fileIndex) {
 					if ( !fileFilter_.IsMatch(names[fileIndex]) ) {
@@ -497,8 +505,13 @@ namespace ICSharpCode.SharpZipLib.Core
 			}
 
 			if ( alive_ && recurse ) {
-				try {
+				try
+                {
+#if !PCL
 					string[] names = System.IO.Directory.GetDirectories(directory);
+#else
+                    string[] names = VFS.Current.GetDirectories(directory).ToArray();
+#endif
 					foreach (string fulldir in names) {
 						if ((directoryFilter_ == null) || (directoryFilter_.IsMatch(fulldir))) {
 							ScanDir(fulldir, true);
@@ -531,5 +544,5 @@ namespace ICSharpCode.SharpZipLib.Core
 		bool alive_;
 		#endregion
 	}
-#endif
+
 }

@@ -47,7 +47,7 @@ using ICSharpCode.SharpZipLib.Checksums;
 using ICSharpCode.SharpZipLib.Zip.Compression;
 using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
 
-#if !NETCF_1_0 && !PCL
+#if !NETCF_1_0 && !NOCRYPTO
 using ICSharpCode.SharpZipLib.Encryption;
 #endif
 
@@ -499,8 +499,8 @@ namespace ICSharpCode.SharpZipLib.Zip
 			if (entry.IsCrypted) {
 #if NETCF_1_0
 				throw new ZipException("Encryption not supported for Compact Framework 1.0");
-#elif PCL
-				throw new ZipException("Encryption not supported for Portable Class Library");
+#elif NOCRYPTO
+                throw new ZipException("Encryption not supported for Portable Class Library");
 #else
 				if (password == null) {
 					throw new ZipException("No password set.");
@@ -527,7 +527,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 				}
 #endif				
 			} else {
-#if !NETCF_1_0 && !PCL
+#if !NETCF_1_0 && !NOCRYPTO
 				inputBuffer.CryptoTransform = null;
 #endif				
 			}

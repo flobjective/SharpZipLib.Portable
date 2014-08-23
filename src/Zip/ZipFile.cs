@@ -58,6 +58,9 @@ using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Checksums;
 using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
 using ICSharpCode.SharpZipLib.Zip.Compression;
+#if PCL
+using ICSharpCode.SharpZipLib.VirtualFileSystem;
+#endif
 
 namespace ICSharpCode.SharpZipLib.Zip 
 {
@@ -379,7 +382,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 			set { key = value; }
 		}
 		
-#if !NETCF_1_0 && !PCL
+#if !NETCF_1_0 && !NOCRYPTO
 		/// <summary>
 		/// Password to be used for encrypting/decrypting files.
 		/// </summary>
@@ -410,7 +413,6 @@ namespace ICSharpCode.SharpZipLib.Zip
 		
 		#region Constructors
 
-#if !PCL
 		/// <summary>
 		/// Opens a Zip file with the given name for reading.
 		/// </summary>
@@ -430,7 +432,11 @@ namespace ICSharpCode.SharpZipLib.Zip
 			
 			name_ = name;
 
+#if !PCL
 			baseStream_ = File.Open(name, FileMode.Open, FileAccess.Read, FileShare.Read);
+#else
+            baseStream_ = VFS.Current.OpenReadFile(name);
+#endif
 			isStreamOwner = true;
 			
 			try {
@@ -442,6 +448,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 			}
 		}
 		
+#if !PCL
 		/// <summary>
 		/// Opens a Zip file reading the given <see cref="FileStream"/>.
 		/// </summary>
@@ -454,6 +461,20 @@ namespace ICSharpCode.SharpZipLib.Zip
 		/// The file doesn't contain a valid zip archive.
 		/// </exception>
 		public ZipFile(FileStream file)
+#else
+        /// <summary>
+        /// Opens a Zip file reading the given <see cref="VfsStream"/>.
+        /// </summary>
+        /// <param name="file">The <see cref="VfsStream"/> to read archive data from.</param>
+        /// <exception cref="ArgumentNullException">The supplied argument is null.</exception>
+        /// <exception cref="IOException">
+        /// An i/o error occurs.
+        /// </exception>
+        /// <exception cref="ZipException">
+        /// The file doesn't contain a valid zip archive.
+        /// </exception>
+        public ZipFile(VfsStream file)
+#endif
 		{
 			if ( file == null ) {
 				throw new ArgumentNullException("file");
@@ -475,7 +496,6 @@ namespace ICSharpCode.SharpZipLib.Zip
 				throw;
 			}
 		}
-#endif
 
 		/// <summary>
 		/// Opens a Zip file reading the given <see cref="Stream"/>.
@@ -556,7 +576,6 @@ namespace ICSharpCode.SharpZipLib.Zip
 		#endregion
 		
 		#region Creators
-#if !PCL
 		/// <summary>
 		/// Create a new <see cref="ZipFile"/> whose data will be stored in a file.
 		/// </summary>
@@ -567,17 +586,20 @@ namespace ICSharpCode.SharpZipLib.Zip
 		{
 			if ( fileName == null ) {
 				throw new ArgumentNullException("fileName");
-			}
+            }
 
+#if !PCL
 			FileStream fs = File.Create(fileName);
-			
+#else
+            Stream fs = VFS.Current.CreateFile(fileName);
+#endif
+
 			ZipFile result = new ZipFile();
 			result.name_ = fileName;
 			result.baseStream_ = fs;
 			result.isStreamOwner = true;
 			return result;
 		}
-#endif
 
 		/// <summary>
 		/// Create a new <see cref="ZipFile"/> whose data will be stored on a stream.
@@ -727,7 +749,8 @@ namespace ICSharpCode.SharpZipLib.Zip
 			}			
 			
 			// TODO: This will be slow as the next ice age for huge archives!
-			for (int i = 0; i < entries_.Length; i++) {
+			for (int i = 0; i < entries_.Length; i++)
+            {
 #if !PCL
 				if (string.Compare(name, entries_[i].Name, ignoreCase, CultureInfo.InvariantCulture) == 0) {
 					return i;
@@ -831,7 +854,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 #if NETCF_1_0
 				throw new ZipException("decryption not supported for Compact Framework 1.0");
 #elif PCL
-				throw new ZipException("decryption not supported for Portable Class Library");
+                throw new ZipException("decryption not supported for Portable Class Library");
 #else
                 result = CreateAndInitDecryptionStream(result, entries_[entryIndex]);
 				if (result == null) {
@@ -1454,11 +1477,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 		/// <param name="archiveStorage">The storage to use during the update.</param>
 		public void BeginUpdate(IArchiveStorage archiveStorage)
 		{
-#if !PCL
 			BeginUpdate(archiveStorage, new DynamicDiskDataSource());
-#else
-            BeginUpdate(archiveStorage, new EmptyDynamicDataSource());
-#endif
 		}
 		
 		/// <summary>
@@ -1469,16 +1488,12 @@ namespace ICSharpCode.SharpZipLib.Zip
 		/// <seealso cref="AbortUpdate"></seealso>
 		public void BeginUpdate()
 		{
-#if !PCL
 			if ( Name == null ) {
 				BeginUpdate(new MemoryArchiveStorage(), new DynamicDiskDataSource());
 			}
 			else {
 				BeginUpdate(new DiskArchiveStorage(this), new DynamicDiskDataSource());
 			}
-#else
-            BeginUpdate(new MemoryArchiveStorage(), new EmptyDynamicDataSource());
-#endif
 		}
 
 		/// <summary>
@@ -1580,8 +1595,8 @@ namespace ICSharpCode.SharpZipLib.Zip
 				updateIndex_.Add(update.Entry.Name, index);
 			}
 		}
-#if !PCL
-		/// <summary>
+
+        /// <summary>
 		/// Add a new entry to the archive.
 		/// </summary>
 		/// <param name="fileName">The name of the file to add.</param>
@@ -1673,8 +1688,6 @@ namespace ICSharpCode.SharpZipLib.Zip
 			CheckUpdating();
 			AddUpdate(new ZipUpdate(fileName, EntryFactory.MakeFileEntry(fileName, entryName, true)));
 		}
-#else
-#endif
 
 		/// <summary>
 		/// Add a file entry with data.
@@ -1764,7 +1777,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 
 			AddUpdate(new ZipUpdate(UpdateCommand.Add, entry));
 		}
-#if !PCL
+
 		/// <summary>
 		/// Add a directory entry to the archive.
 		/// </summary>
@@ -1780,7 +1793,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 			ZipEntry dirEntry = EntryFactory.MakeDirectoryEntry(directoryName);
 			AddUpdate(new ZipUpdate(UpdateCommand.Add, dirEntry));
 		}
-#endif
+
 		#endregion
 		
 		#region Modifying Entries
@@ -2145,11 +2158,11 @@ namespace ICSharpCode.SharpZipLib.Zip
 
 			if ( centralExtraData.Length > 0 ) {
 				baseStream_.Write(centralExtraData, 0, centralExtraData.Length);
-			}
+            }
 #if !PCL
 			byte[] rawComment = (entry.Comment != null) ? Encoding.ASCII.GetBytes(entry.Comment) : new byte[0];
 #else
-            byte[] rawComment = (entry.Comment != null) ? Encoding.UTF8.GetBytes(entry.Comment) : new byte[0];
+            byte[] rawComment = (entry.Comment != null) ? AsciiEncoding.Default.GetBytes(entry.Comment) : new byte[0];
 #endif
 			if ( rawComment.Length > 0 ) {
 				baseStream_.Write(rawComment, 0, rawComment.Length);
@@ -2413,7 +2426,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 #if NETCF_1_0
 				throw new ZipException("Encryption not supported for Compact Framework 1.0");
 #elif PCL
-				throw new ZipException("Encryption not supported for Portable Class Library");
+                                               throw new ZipException("Encryption not supported for Portable Class Library");
 #else
 				result = CreateAndInitEncryptionStream(result, entry);
 #endif
@@ -2584,16 +2597,19 @@ namespace ICSharpCode.SharpZipLib.Zip
 			baseStream_ = source;
 			ReadEntries();
 		}
-#if !PCL
+
 		void Reopen()
 		{
 			if (Name == null) {
 				throw new InvalidOperationException("Name is not known cannot Reopen");
-			}
-
+            }
+#if !PCL
 			Reopen(File.Open(Name, FileMode.Open, FileAccess.Read, FileShare.Read));
-		}
+#else
+            Reopen(VFS.Current.OpenReadFile(Name));
 #endif
+		}
+
 		void UpdateCommentOnly()
 		{
 			long baseLength = baseStream_.Length;
@@ -2623,13 +2639,16 @@ namespace ICSharpCode.SharpZipLib.Zip
 					baseStream_ = archiveStorage_.OpenForDirectUpdate(baseStream_);
 					updateFile = new ZipHelperStream(baseStream_);
 				}
+				else
+                {
 #if !PCL
-				else {
 					baseStream_.Close();
+#else
+                    baseStream_.Dispose();
+#endif
 					baseStream_ = null;
 					updateFile = new ZipHelperStream(Name);
 				}
-#endif
 			}
 
 			using ( updateFile ) {
@@ -2823,11 +2842,14 @@ namespace ICSharpCode.SharpZipLib.Zip
 			}
 			catch {
 				workFile.Close();
+				if (!directUpdate && (workFile.Name != null))
+                {
 #if !PCL
-				if (!directUpdate && (workFile.Name != null)) {
 					File.Delete(workFile.Name);
-				}
+#else
+                    VFS.Current.DeleteFile(workFile.Name);
 #endif
+                }
 				throw;
 			}
 
@@ -2837,7 +2859,8 @@ namespace ICSharpCode.SharpZipLib.Zip
 				isNewArchive_ = false;
 				ReadEntries();
 			}
-			else {
+			else
+            {
 #if !PCL
 				baseStream_.Close();
 #else
@@ -2863,7 +2886,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 		class ZipUpdate
 		{
 			#region Constructors
-#if !PCL
+
 			public ZipUpdate(string fileName, ZipEntry entry)
 			{
 				command_ = UpdateCommand.Add;
@@ -2886,7 +2909,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 			{
 				// Do nothing.
 			}
-#endif
+
 			[Obsolete]
 			public ZipUpdate(IStaticDataSource dataSource, string entryName, CompressionMethod compressionMethod)
 			{
@@ -3039,7 +3062,8 @@ namespace ICSharpCode.SharpZipLib.Zip
 				entries_ = new ZipEntry[0];
 						
 				if ( IsStreamOwner && (baseStream_ != null) ) {
-					lock(baseStream_) {
+					lock(baseStream_)
+                    {
 #if !PCL
 						baseStream_.Close();
 #else
@@ -3310,8 +3334,8 @@ namespace ICSharpCode.SharpZipLib.Zip
 		{
 			return TestLocalHeader(entry, HeaderTest.Extract);
 		}
-		
-#if !NETCF_1_0 && !PCL
+
+#if !NETCF_1_0 && !NOCRYPTO
 		Stream CreateAndInitDecryptionStream(Stream baseStream, ZipEntry entry)
 		{
 			CryptoStream result = null;
@@ -3398,8 +3422,8 @@ namespace ICSharpCode.SharpZipLib.Zip
 			}
 		}
 #endif
-		
-		static void WriteEncryptionHeader(Stream stream, long crcValue)
+
+        static void WriteEncryptionHeader(Stream stream, long crcValue)
 		{
 			byte[] cryptBuffer = new byte[ZipConstants.CryptoHeaderSize];
 			Random rnd = new Random();
@@ -3414,7 +3438,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 		bool       isDisposed_;
         string     name_ = null;
 		string     comment_;
-#if !PCL
+#if !NOCRYPTO
 		string     rawPassword_;
 #endif
 		Stream     baseStream_;
@@ -3788,7 +3812,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 					return baseStream_.ReadByte();
 				}
 			}
-#if !PCL	
+#if !PCL
 			/// <summary>
 			/// Close this <see cref="PartialInputStream">partial input stream</see>.
 			/// </summary>
@@ -4076,7 +4100,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 		/// <remarks>Ideally a new stream is created and opened to achieve this, to avoid locking problems.</remarks>
 		Stream GetSource(ZipEntry entry, string name);
 	}
-#if !PCL
+
 	/// <summary>
 	/// Default implementation of a <see cref="IStaticDataSource"/> for use with files stored on disk.
 	/// </summary>
@@ -4098,8 +4122,12 @@ namespace ICSharpCode.SharpZipLib.Zip
 		/// </summary>
 		/// <returns>Returns a <see cref="Stream"/> provising data.</returns>
 		public Stream GetSource()
-		{
+        {
+#if !PCL
 			return File.Open(fileName_, FileMode.Open, FileAccess.Read, FileShare.Read);
+#else
+            return VFS.Current.OpenReadFile(fileName_);
+#endif
 		}
 
 		#endregion
@@ -4132,8 +4160,13 @@ namespace ICSharpCode.SharpZipLib.Zip
 		{
 			Stream result = null;
 
-			if ( name != null ) {
+			if ( name != null )
+            {
+#if !PCL
 				result = File.Open(name, FileMode.Open, FileAccess.Read, FileShare.Read);
+#else
+                result = VFS.Current.OpenReadFile(name);
+#endif
 			}
 
 			return result;
@@ -4141,7 +4174,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 
 		#endregion
 	}
-#else
+
     /// <summary>
     /// Empty data source
     /// </summary>
@@ -4158,7 +4191,7 @@ namespace ICSharpCode.SharpZipLib.Zip
             return null;
         }
     }
-#endif
+
 	#endregion
 	
 	#region Archive Storage
@@ -4276,7 +4309,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 		FileUpdateMode updateMode_;
 		#endregion
 	}
-#if !PCL
+
 	/// <summary>
 	/// An <see cref="IArchiveStorage"/> implementation suitable for hard disks.
 	/// </summary>
@@ -4318,13 +4351,22 @@ namespace ICSharpCode.SharpZipLib.Zip
 		{
 			if ( temporaryName_ != null ) {
 				temporaryName_ = GetTempFileName(temporaryName_, true);
+#if !PCL
 				temporaryStream_ = File.Open(temporaryName_, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None);
+#else
+                temporaryStream_ = VFS.Current.CreateFile(temporaryName_);
+#endif
 			}
 			else {
 				// Determine where to place files based on internal strategy.
-				// Currently this is always done in system temp directory.
+                // Currently this is always done in system temp directory.
+#if !PCL
 				temporaryName_ = Path.GetTempFileName();
 				temporaryStream_ = File.Open(temporaryName_, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None);
+#else
+                temporaryName_ = VFS.Current.GetTempFileName();
+                temporaryStream_ = VFS.Current.CreateFile(temporaryName_);
+#endif
 			}
 
 			return temporaryStream_;
@@ -4346,7 +4388,9 @@ namespace ICSharpCode.SharpZipLib.Zip
 			string moveTempName = GetTempFileName(fileName_, false);
 			bool newFileCreated = false;
 
-			try	{
+			try
+            {
+#if !PCL
 				temporaryStream_.Close();
 				File.Move(fileName_, moveTempName);
 				File.Move(temporaryName_, fileName_);
@@ -4354,14 +4398,29 @@ namespace ICSharpCode.SharpZipLib.Zip
 				File.Delete(moveTempName);
 
 				result = File.Open(fileName_, FileMode.Open, FileAccess.Read, FileShare.Read);
+#else
+                temporaryStream_.Dispose();
+                VFS.Current.MoveFile(fileName_, moveTempName);
+                VFS.Current.MoveFile(temporaryName_, fileName_);
+                newFileCreated = true;
+                VFS.Current.DeleteFile(moveTempName);
+
+                result = VFS.Current.OpenReadFile(fileName_);
+#endif
 			}
 			catch(Exception) {
 				result  = null;
 
 				// Try to roll back changes...
-				if ( !newFileCreated ) {
+				if ( !newFileCreated )
+                {
+#if !PCL
 					File.Move(moveTempName, fileName_);
 					File.Delete(temporaryName_);
+#else
+                    VFS.Current.MoveFile(moveTempName, fileName_);
+                    VFS.Current.DeleteFile(temporaryName_);
+#endif
 				}
 
 				throw;
@@ -4376,7 +4435,8 @@ namespace ICSharpCode.SharpZipLib.Zip
 		/// <param name="stream">The <see cref="Stream"/> to copy.</param>
 		/// <returns>Returns a temporary output <see cref="Stream"/> that is a copy of the input.</returns>
 		public override Stream MakeTemporaryCopy(Stream stream)
-		{
+        {
+#if !PCL
 			stream.Close();
 
 			temporaryName_ = GetTempFileName(fileName_, true);
@@ -4385,6 +4445,14 @@ namespace ICSharpCode.SharpZipLib.Zip
 			temporaryStream_ = new FileStream(temporaryName_, 
 				FileMode.Open, 
 				FileAccess.ReadWrite);
+#else
+            stream.Dispose();
+            temporaryName_ = GetTempFileName(fileName_, true);
+            VFS.Current.CopyFile(fileName_, temporaryName_, true);
+
+            temporaryStream_ = VFS.Current.OpenReadFile(temporaryName_);
+#endif
+
 			return temporaryStream_;
 		}
 
@@ -4398,7 +4466,8 @@ namespace ICSharpCode.SharpZipLib.Zip
 		{
 			Stream result;
 			if ((stream == null) || !stream.CanWrite)
-			{
+            {
+#if !PCL
 				if (stream != null) {
 					stream.Close();
 				}
@@ -4406,6 +4475,14 @@ namespace ICSharpCode.SharpZipLib.Zip
 				result = new FileStream(fileName_,
 						FileMode.Open,
 						FileAccess.ReadWrite);
+#else
+                if (stream != null)
+                {
+                    stream.Dispose();
+                }
+
+                result = VFS.Current.OpenReadFile(fileName_);
+#endif
 			}
 			else
 			{
@@ -4420,8 +4497,13 @@ namespace ICSharpCode.SharpZipLib.Zip
 		/// </summary>
 		public override void Dispose()
 		{
-			if ( temporaryStream_ != null ) {
+			if ( temporaryStream_ != null )
+            {
+#if !PCL
 				temporaryStream_.Close();
+#else
+                temporaryStream_.Dispose();
+#endif
 			}
 		}
 
@@ -4432,8 +4514,13 @@ namespace ICSharpCode.SharpZipLib.Zip
 		{
 			string result = null;
 				
-			if ( original == null ) {
+			if ( original == null )
+            {
+#if !PCL
 				result = Path.GetTempFileName();
+#else
+                result = VFS.Current.GetTempFileName();
+#endif
 			}
 			else {
 				int counter = 0;
@@ -4442,12 +4529,23 @@ namespace ICSharpCode.SharpZipLib.Zip
 				while ( result == null ) {
 					counter += 1;
 					string newName = string.Format("{0}.{1}{2}.tmp", original, suffixSeed, counter);
+#if !PCL
 					if ( !File.Exists(newName) ) {
+#else
+                    if (!VFS.Current.FileExists(newName))
+                    {
+#endif
 						if ( makeTempFile) {
 							try	{
-								// Try and create the file.
+                                // Try and create the file.
+#if !PCL
 								using ( FileStream stream = File.Create(newName) ) {
 								}
+#else
+                                using (Stream stream = VFS.Current.CreateFile(newName))
+                                {
+                                }
+#endif
 								result = newName;
 							}
 							catch {
@@ -4470,7 +4568,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 		string temporaryName_;
 		#endregion
 	}
-#endif
+
 	/// <summary>
 	/// An <see cref="IArchiveStorage"/> implementation suitable for in memory streams.
 	/// </summary>
@@ -4584,7 +4682,8 @@ namespace ICSharpCode.SharpZipLib.Zip
 		/// </summary>
 		public override void Dispose()
 		{
-			if ( temporaryStream_ != null ) {
+			if ( temporaryStream_ != null )
+            {
 #if !PCL
 				temporaryStream_.Close();
 #else

@@ -43,7 +43,7 @@
 using System;
 using System.IO;
 
-#if !NETCF_1_0 && !PCL
+#if !NETCF_1_0 && !NOCRYPTO
 using System.Security.Cryptography;
 #endif
 
@@ -161,15 +161,15 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression.Streams
 				}
 				rawLength += count;
 				toRead -= count;
-			}
-			
-#if !NETCF_1_0 && !PCL
+            }
+
+#if !NETCF_1_0 && !NOCRYPTO
 			if ( cryptoTransform != null ) {
 				clearTextLength = cryptoTransform.TransformBlock(rawData, 0, rawLength, clearText, 0);
 			}
 			else 
-#endif				
-			{
+#endif
+            {
 				clearTextLength = rawLength;
 			}
 
@@ -295,7 +295,7 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression.Streams
 			return (uint)ReadLeInt() | ((long)ReadLeInt() << 32);
 		}
 
-#if !NETCF_1_0 && !PCL
+#if !NETCF_1_0 && !NOCRYPTO
 		/// <summary>
 		/// Get/set the <see cref="ICryptoTransform"/> to apply to any data.
 		/// </summary>
@@ -323,26 +323,25 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression.Streams
 		}
 #endif
 
-		#region Instance Fields
-		int rawLength;
+        #region Instance Fields
+        int rawLength;
 		byte[] rawData;
 		
 		int clearTextLength;
 		byte[] clearText;
-#if !NETCF_1_0	&& !PCL
+#if !NETCF_1_0	&& !NOCRYPTO
 		byte[] internalClearText;
 #endif
-		
-		int available;
-		
-#if !NETCF_1_0 && !PCL
+
+        int available;
+
+#if !NETCF_1_0 && !NOCRYPTO
 		ICryptoTransform cryptoTransform;
-#endif		
-		Stream inputStream;
+#endif
+        Stream inputStream;
 		#endregion
 	}
 	
-#if !PCL
 	/// <summary>
 	/// This filter stream is used to decompress data compressed using the "deflate"
 	/// format. The "deflate" format is described in RFC 1951.
@@ -352,14 +351,6 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression.Streams
 	///
 	/// Author of the original java version : John Leuner.
 	/// </summary>
-#else
-    /// <summary>
-    /// This filter stream is used to decompress data compressed using the "deflate"
-    /// format. The "deflate" format is described in RFC 1951.
-    ///
-    /// Author of the original java version : John Leuner.
-    /// </summary>
-#endif
 	public class InflaterInputStream : Stream
 	{
 		#region Constructors
@@ -500,7 +491,7 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression.Streams
 		/// </summary>		
         protected void StopDecrypting()
         {
-#if !NETCF_1_0	&& !PCL
+#if !NETCF_1_0	&& !NOCRYPTO
 			inputBuffer.CryptoTransform = null;
 #endif
         }

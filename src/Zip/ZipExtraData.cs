@@ -968,7 +968,8 @@ namespace ICSharpCode.SharpZipLib.Zip
 		/// </summary>
 		public void Dispose()
 		{
-			if ( _newEntry != null ) {
+			if ( _newEntry != null )
+            {
 #if !PCL
 				_newEntry.Close();
 #else

@@ -525,8 +525,8 @@ namespace ICSharpCode.SharpZipLib.Zip
 		public static string ConvertToString(byte[] data, int count)
 		{
 			if ( data == null ) {
-				return string.Empty;	
-			}
+				return string.Empty;
+            }
 #if !PCL
 			return Encoding.GetEncoding(DefaultCodePage).GetString(data, 0, count);
 #else
@@ -611,7 +611,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 		{
 			if ( str == null ) {
 				return new byte[0];
-			}
+            }
 #if !PCL
 			return Encoding.GetEncoding(DefaultCodePage).GetBytes(str);
 #else
