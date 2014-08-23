@@ -25,7 +25,7 @@ This library is build with [AppVeyor](https://ci.appveyor.com/project/ygrenier/s
 
 ## Virtual File System
 
-With the version 0.86.0.PCL-1, an VirtualFileSystem structure is available. 
+With the version 0.86.0.0001, an VirtualFileSystem structure is available. 
 
 This structure permit to use SharpZipLib with file name like original library. 
 For this the `VFS.Current` singleton provide the `IVirtualFileSystem` used by the library.
