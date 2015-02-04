@@ -124,7 +124,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 		/// </summary>
 		Des            = 0x6601,
 		/// <summary>
-		/// RCS encryption has been used for encryption.
+		/// RC2 encryption has been used for encryption.
 		/// </summary>
 		RC2            = 0x6602,
 		/// <summary>
@@ -475,7 +475,18 @@ namespace ICSharpCode.SharpZipLib.Zip
 #elif PCL
         static Encoding defaultEncoding = Encoding.UTF8;
 #else
-		static int defaultCodePage = Thread.CurrentThread.CurrentCulture.TextInfo.OEMCodePage;
+	    /// <remarks>
+	    /// Get OEM codepage from NetFX, which parses the NLP file with culture info table etc etc.
+	    /// But sometimes it yields the special value of 1 which is nicknamed <c>CodePageNoOEM</c> in <see cref="Encoding"/> sources (might also mean <c>CP_OEMCP</c>, but Encoding puts it so).
+	    /// This was observed on Ukranian and Hindu systems.
+	    /// Given this value, <see cref="Encoding.GetEncoding(int)"/> throws an <see cref="ArgumentException"/>.
+	    /// So replace it with some fallback, e.g. 437 which is the default cpcp in a console in a default Windows installation.
+	    /// </remarks>
+	    static int defaultCodePage =
+            // these values cause ArgumentException in subsequent calls to Encoding::GetEncoding()
+            ((Thread.CurrentThread.CurrentCulture.TextInfo.OEMCodePage == 1) || (Thread.CurrentThread.CurrentCulture.TextInfo.OEMCodePage == 2) || (Thread.CurrentThread.CurrentCulture.TextInfo.OEMCodePage == 3) || (Thread.CurrentThread.CurrentCulture.TextInfo.OEMCodePage == 42))
+            ? 437 // The default OEM encoding in a console in a default Windows installation, as a fallback.
+	        : Thread.CurrentThread.CurrentCulture.TextInfo.OEMCodePage;  
 #endif
 #if !PCL
 		/// <summary>
@@ -490,7 +501,12 @@ namespace ICSharpCode.SharpZipLib.Zip
 				return defaultCodePage; 
 			}
 			set {
-				defaultCodePage = value; 
+                if ((value < 0) || (value > 65535) ||
+                    (value == 1) || (value == 2) || (value == 3) || (value == 42)) {
+                    throw new ArgumentOutOfRangeException("value");
+                }
+
+                defaultCodePage = value;
 			}
 		}
 #else
@@ -510,7 +526,7 @@ namespace ICSharpCode.SharpZipLib.Zip
         }
 #endif
 
-		/// <summary>
+	    /// <summary>
 		/// Convert a portion of a byte array to a string.
 		/// </summary>		
 		/// <param name="data">
@@ -520,7 +536,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 		/// Number of bytes to convert starting from index 0
 		/// </param>
 		/// <returns>
-		/// data[0]..data[length - 1] converted to a string
+		/// data[0]..data[count - 1] converted to a string
 		/// </returns>
 		public static string ConvertToString(byte[] data, int count)
 		{
