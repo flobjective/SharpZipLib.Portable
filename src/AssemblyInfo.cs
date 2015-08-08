@@ -91,8 +91,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion("0.86.0.518")]
 [assembly: AssemblyInformationalVersionAttribute("0.86.0")]
 #else
-[assembly: AssemblyVersion("0.86.0.51802")]
-[assembly: AssemblyInformationalVersionAttribute("0.86.0.0002")]
+[assembly: AssemblyVersion("0.86.0.51803")]
+[assembly: AssemblyInformationalVersionAttribute("0.86.0.0003")]
 #endif
 
 [assembly: CLSCompliant(true)]
