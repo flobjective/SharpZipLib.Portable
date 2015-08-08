@@ -23,8 +23,8 @@
     <tags>SharpZipLib zip PCL Portable</tags>
   </metadata>
   <files>
-    <file src="\bin\ICSharpCode.SharpZipLib.Portable.dll" target="lib\portable-net45+netcore45+wp8+win8+wpa81+MonoTouch+MonoAndroid\" />
-    <file src="\bin\ICSharpCode.SharpZipLib.Portable.pdb" target="lib\portable-net45+netcore45+wp8+win8+wpa81+MonoTouch+MonoAndroid\" />
-    <file src="\bin\ICSharpCode.SharpZipLib.Portable.xml" target="lib\portable-net45+netcore45+wp8+win8+wpa81+MonoTouch+MonoAndroid\" />
+    <file src="\bin\ICSharpCode.SharpZipLib.Portable.dll" target="lib\portable-net45+netcore45+wp8+win8+wpa81+MonoTouch+MonoAndroid+Xamarin.iOS10\" />
+    <file src="\bin\ICSharpCode.SharpZipLib.Portable.pdb" target="lib\portable-net45+netcore45+wp8+win8+wpa81+MonoTouch+MonoAndroid+Xamarin.iOS10\" />
+    <file src="\bin\ICSharpCode.SharpZipLib.Portable.xml" target="lib\portable-net45+netcore45+wp8+win8+wpa81+MonoTouch+MonoAndroid+Xamarin.iOS10\" />
   </files>
 </package>
